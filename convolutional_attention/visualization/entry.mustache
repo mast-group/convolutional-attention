@@ -1,0 +1,24 @@
+{{#is_first}}<h3>Original Name <code>{{original_name}}</code></h3>{{/is_first}}
+
+<div class="panel panel-info">
+	<div class="panel-heading"><h3 class="panel-title"><label>Target Subtoken</label>
+	<code>{{target subtoken}}</code></h3></div>
+	<div class="panel-body">
+		<label><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span> Suggestions</label>
+		<ul class="list-inline">{{#suggestions}}
+			<li>
+				{{#is_correct}}<b>{{/is_correct}}
+				<code {{#is_correct}}style="background-color:#fc7e7e; color:black;"{{/is_correct}}>{{token}}</code> ({{probability}})
+				{{#is_correct}}</b>{{/is_correct}}
+			</li>
+		{{/suggestions}}</ul>
+		<label><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Attention</label>
+		<p>{{{attention_visualization}}}</p>
+        {{#has_copy}}
+            <label><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span> Copy Attention</label>
+            (Copy Probability: {{copy_prob}})
+		    <p>{{{copy_attention_visualization}}}</p>
+        {{/has_copy}}
+	</div>
+</div>
+
