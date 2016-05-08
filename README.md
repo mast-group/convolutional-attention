@@ -1,4 +1,4 @@
-Convolutional Attentional Model
+Convolutional Attention Network
 ===============
 Code related to the paper:
 ```
@@ -17,6 +17,6 @@ Usage Instructions
 ======
 To train the `copy_attention` model with the data use
 ```
-python copy_conv_rec_learner.py <training_file> <max_num_epochs> D <test_file>
+> python copy_conv_rec_learner.py <training_file> <max_num_epochs> D <test_file>
 ```
 
