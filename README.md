@@ -5,7 +5,7 @@ Code related to the paper:
 @inproceedings{allamanis2016convolutional,
   title={A Convolutional Attention Network for Extreme Summarization of Source Code},
   author={Allamanis, Miltiadis and Peng, Hao and Sutton, Charles},
-  booktitle={Proceedings of the 33rd International Conference on Machine Learning (ICML-16)},
+  booktitle={International Conference on Machine Learning (ICML)},
   year={2016}
 }
 ```
