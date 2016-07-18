@@ -4,6 +4,7 @@ import numpy as np
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from theanoutils.optimization import nesterov_rmsprop_multiple, dropout_multiple
+floatX = theano.config.floatX
 
 
 class ConvolutionalAttentionalRecurrentModel(object):
@@ -18,60 +19,60 @@ class ConvolutionalAttentionalRecurrentModel(object):
 
     def __init_parameter(self, empirical_name_dist):
         all_name_rep = np.random.randn(self.all_voc_size, self.D) * 10 ** self.hyperparameters["log_name_rep_init_scale"]
-        self.all_name_reps = theano.shared(all_name_rep, name="all_name_reps")
+        self.all_name_reps = theano.shared(all_name_rep.astype(floatX), name="all_name_reps")
 
         conv_layer1_code = np.random.randn(self.hyperparameters["conv_layer1_nfilters"], 1,
                                      self.hyperparameters["layer1_window_size"], self.D) * 10 ** self.hyperparameters["log_layer1_init_scale"]
-        self.conv_layer1_code = theano.shared(conv_layer1_code, name="conv_layer1_code")
+        self.conv_layer1_code = theano.shared(conv_layer1_code.astype(floatX), name="conv_layer1_code")
         conv_layer1_bias = np.random.randn(self.hyperparameters["conv_layer1_nfilters"]) * 10 ** self.hyperparameters["log_layer1_init_scale"]
-        self.conv_layer1_bias = theano.shared(conv_layer1_bias, name="conv_layer1_bias")
+        self.conv_layer1_bias = theano.shared(conv_layer1_bias.astype(floatX), name="conv_layer1_bias")
 
         conv_layer2_code = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer1_nfilters"],
                                      self.hyperparameters["layer2_window_size"], 1) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.conv_layer2_code = theano.shared(conv_layer2_code, name="conv_layer2_code")
+        self.conv_layer2_code = theano.shared(conv_layer2_code.astype(floatX), name="conv_layer2_code")
 
         # GRU parameters
         gru_prev_hidden_to_next = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer2_nfilters"])\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prev_hidden_to_next = theano.shared(gru_prev_hidden_to_next, name="gru_prev_hidden_to_next")
+        self.gru_prev_hidden_to_next = theano.shared(gru_prev_hidden_to_next.astype(floatX), name="gru_prev_hidden_to_next")
         gru_prev_hidden_to_reset = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer2_nfilters"])\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prev_hidden_to_reset = theano.shared(gru_prev_hidden_to_reset, name="gru_prev_hidden_to_reset")
+        self.gru_prev_hidden_to_reset = theano.shared(gru_prev_hidden_to_reset.astype(floatX), name="gru_prev_hidden_to_reset")
         gru_prev_hidden_to_update = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer2_nfilters"])\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prev_hidden_to_update = theano.shared(gru_prev_hidden_to_update, name="gru_prev_hidden_to_update")
+        self.gru_prev_hidden_to_update = theano.shared(gru_prev_hidden_to_update.astype(floatX), name="gru_prev_hidden_to_update")
 
         gru_prediction_to_reset = np.random.randn(self.D, self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prediction_to_reset = theano.shared(gru_prediction_to_reset, name="gru_prediction_to_reset")
+        self.gru_prediction_to_reset = theano.shared(gru_prediction_to_reset.astype(floatX), name="gru_prediction_to_reset")
 
         gru_prediction_to_update = np.random.randn(self.D, self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prediction_to_update = theano.shared(gru_prediction_to_update, name="gru_prediction_to_update")
+        self.gru_prediction_to_update = theano.shared(gru_prediction_to_update.astype(floatX), name="gru_prediction_to_update")
 
         gru_prediction_to_hidden = np.random.randn(self.D, self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_hidden_init_scale"]
-        self.gru_prediction_to_hidden = theano.shared(gru_prediction_to_hidden, name="gru_prediction_to_hidden")
+        self.gru_prediction_to_hidden = theano.shared(gru_prediction_to_hidden.astype(floatX), name="gru_prediction_to_hidden")
 
         conv_layer2_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.conv_layer2_bias = theano.shared(conv_layer2_bias, name="conv_layer2_bias")
+        self.conv_layer2_bias = theano.shared(conv_layer2_bias.astype(floatX), name="conv_layer2_bias")
 
         gru_hidden_update_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.gru_hidden_update_bias = theano.shared(gru_hidden_update_bias, name="gru_hidden_update_bias")
+        self.gru_hidden_update_bias = theano.shared(gru_hidden_update_bias.astype(floatX), name="gru_hidden_update_bias")
         gru_update_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.gru_update_bias = theano.shared(gru_update_bias, name="gru_update_bias")
+        self.gru_update_bias = theano.shared(gru_update_bias.astype(floatX), name="gru_update_bias")
         gru_reset_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.gru_reset_bias = theano.shared(gru_reset_bias, name="gru_reset_bias")
+        self.gru_reset_bias = theano.shared(gru_reset_bias.astype(floatX), name="gru_reset_bias")
 
         h0 = np.random.randn(1, self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.h0 = theano.shared(h0, name="h0")
+        self.h0 = theano.shared(h0.astype(floatX), name="h0")
 
         # Currently conflate all to one dimension
         conv_layer3_code = np.random.randn(1, self.hyperparameters["conv_layer2_nfilters"],
                                      self.hyperparameters["layer3_window_size"], 1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
-        self.conv_layer3_code = theano.shared(conv_layer3_code, name="conv_layer3_code")
+        self.conv_layer3_code = theano.shared(conv_layer3_code.astype(floatX), name="conv_layer3_code")
         conv_layer3_bias = np.random.randn(1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
-        self.conv_layer3_bias = theano.shared(conv_layer3_bias[0], name="conv_layer3_bias")
+        self.conv_layer3_bias = theano.shared(conv_layer3_bias[0].astype(floatX), name="conv_layer3_bias")
 
         # Names
-        self.name_bias = theano.shared(np.log(empirical_name_dist)[:-1], name="name_bias")
+        self.name_bias = theano.shared(np.log(empirical_name_dist).astype(floatX)[:-1], name="name_bias")
 
         self.rng = RandomStreams()
 
@@ -197,8 +198,8 @@ class ConvolutionalAttentionalRecurrentModel(object):
         return sentence, name_log_probs, avg_target_name_log_prob, token_weights
 
     def __compile_model_functions(self):
-            grad_acc = [theano.shared(np.zeros(param.get_value().shape)) for param in self.train_parameters] \
-                        + [theano.shared(0, name="sentence_count")]
+            grad_acc = [theano.shared(np.zeros(param.get_value().shape).astype(floatX)) for param in self.train_parameters] \
+                        + [theano.shared(np.zeros(1,dtype=floatX)[0], name="sentence_count")]
 
             sentence = T.ivector("sentence")
             name_targets = T.ivector("name_targets")
@@ -220,8 +221,8 @@ class ConvolutionalAttentionalRecurrentModel(object):
                                                     momentum=self.hyperparameters["momentum"],
                                                     grad_clip=self.hyperparameters["grad_clip"],
                                                     output_ratios=True)
-            step_updates.extend([(v, T.zeros(v.shape)) for v in grad_acc[:-1]])  # Set accumulators to 0
-            step_updates.append((grad_acc[-1], 0))
+            step_updates.extend([(v, T.zeros(v.shape,dtype=floatX)) for v in grad_acc[:-1]])  # Set accumulators to 0
+            step_updates.append((grad_acc[-1],  T.zeros(1,dtype=floatX)))
 
             self.grad_step = theano.function(inputs=[], updates=step_updates, outputs=ratios)
 

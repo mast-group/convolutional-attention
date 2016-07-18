@@ -16,6 +16,8 @@ class TokenCodeNamingData:
     def __get_file_data(input_file):
         with open(input_file, 'r') as f:
             data = json.load(f)
+        # data=[{"tokens":"hello world I am OK".split(),"name":"hello world you".split()}]*4
+        # data+=[{"tokens":"just another test of a silly program".split(),"name":"who knows".split()}]*4
         names = []
         original_names = []
         code = []
