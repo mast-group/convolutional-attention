@@ -22,7 +22,7 @@ class ConvolutionalAttentionalLearner:
         self.padding_size = self.hyperparameters["layer1_window_size"] + self.hyperparameters["layer2_window_size"] + self.hyperparameters["layer3_window_size"] - 3
         self.parameters = None
 
-    def train(self, input_file, patience=5, max_epochs=1000, minibatch_size=2000):
+    def train(self, input_file, patience=5, max_epochs=1000, minibatch_size=500):
         assert self.parameters is None, "Model is already trained"
         print "Extracting data..."
         # Get data (train, validation)
