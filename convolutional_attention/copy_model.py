@@ -223,7 +223,7 @@ class CopyConvolutionalAttentionalModel(object):
 
     def __compile_model_functions(self):
             grad_acc = [theano.shared(np.zeros(param.get_value().shape).astype(floatX)) for param in self.train_parameters] \
-                        + [theano.shared(np.zeros(1,dtype=floatX)[0], name="sentence_count")]
+                        + [theano.shared(np.float32(0), name="sentence_count")]
 
             sentence = T.ivector("sentence")
             is_copy_vector = T.ivector("is_copy_vector")
