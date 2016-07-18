@@ -155,12 +155,12 @@ class CopyConvolutionalRecurrentAttentionalModel(object):
                              self.gru_prev_hidden_to_reset, self.gru_prev_hidden_to_next, self.gru_prev_hidden_to_update
 
 
-        code_convolved_l1 = T.nnet.conv2d(code_embeddings.dimshuffle('x', 'x', 0, 1), conv_weights_code_l1, image_shape=(1, 1, None, self.D),
+        code_convolved_l1 = T.nnet.conv2d(code_embeddings.dimshuffle('x', 'x', 0, 1), conv_weights_code_l1, input_shape=(1, 1, None, self.D),
                                           filter_shape=self.conv_layer1_code.get_value().shape)
         l1_out = code_convolved_l1 + self.conv_layer1_bias.dimshuffle('x', 0, 'x', 'x')
         l1_out = T.switch(l1_out>0, l1_out, 0.1 * l1_out)
 
-        code_convolved_l2 = T.nnet.conv2d(l1_out, conv_weights_code_l2, image_shape=(1, self.hyperparameters["conv_layer1_nfilters"], None, 1),
+        code_convolved_l2 = T.nnet.conv2d(l1_out, conv_weights_code_l2, input_shape=(1, self.hyperparameters["conv_layer1_nfilters"], None, 1),
                                           filter_shape=self.conv_layer2_code.get_value().shape)
         l2_out = code_convolved_l2 + self.conv_layer2_bias.dimshuffle('x', 0, 'x', 'x')
 
@@ -176,7 +176,7 @@ class CopyConvolutionalRecurrentAttentionalModel(object):
             gated_l2 = gated_l2 / gated_l2.norm(2)
             # Normal Attention
             code_convolved_l3 = T.nnet.conv2d(gated_l2, conv_att_weights_code_l3,
-                                              image_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
+                                              input_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
                                               filter_shape=self.conv_layer3_att_code.get_value().shape)[:, 0, :, 0]
 
             l3_out = code_convolved_l3 + conv_att_layer3_bias
@@ -186,7 +186,7 @@ class CopyConvolutionalRecurrentAttentionalModel(object):
 
             # Copy Attention
             code_copy_convolved_l3 = T.nnet.conv2d(gated_l2, conv_weights_code_copy_l3,
-                                          image_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
+                                          input_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
                                           filter_shape=self.conv_layer3_copy_code.get_value().shape)[:, 0, :, 0]
 
             copy_l3_out = code_copy_convolved_l3 + conv_layer3_copy_bias
@@ -194,7 +194,7 @@ class CopyConvolutionalRecurrentAttentionalModel(object):
 
             # Do we copy?
             do_copy_code = T.max(T.nnet.conv2d(gated_l2, conv_weights_code_do_copy,
-                                              image_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
+                                              input_shape=(1, self.hyperparameters["conv_layer2_nfilters"], None, 1),
                                               filter_shape=self.conv_copy_code.get_value().shape)[:, 0, :, 0])
             copy_prob = T.nnet.sigmoid(do_copy_code + conv_copy_bias)
 
