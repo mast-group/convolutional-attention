@@ -22,7 +22,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
         self.padding_size = self.hyperparameters["layer1_window_size"] + self.hyperparameters["layer2_window_size"] + self.hyperparameters["layer3_window_size"] - 3
         self.parameters = None
 
-    def train(self, input_file, patience=5, max_epochs=1000, minibatch_size=500):
+    def train(self, input_file, patience=5, max_epochs=1000, minibatch_size=2000):
         assert self.parameters is None, "Model is already trained"
         print "Extracting data..."
         # Get data (train, validation)
@@ -51,6 +51,8 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
             sys.stdout.write(str(i))
             num_minibatches = min(int(ceil(float(len(train_name_targets)) / minibatch_size))-1, 25)  # Clump minibatches
             for j in xrange(num_minibatches):
+                if (j + 1) * minibatch_size > len(name_ordering):
+                    j = 0
                 name_batch_ids = name_ordering[j * minibatch_size:(j + 1) * minibatch_size]
                 batch_code_sentences = train_code_sentences[name_batch_ids]
                 for k in xrange(len(name_batch_ids)):
@@ -59,6 +61,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
                                           train_target_is_unk[pos], train_name_targets[pos])
                 assert len(name_batch_ids) > 0
                 ratios += model.grad_step()
+                sys.stdout.write("\r%d %d"%(i, n_batches))
                 n_batches += 1
             sys.stdout.write("|")
             if i % 1 == 0:
