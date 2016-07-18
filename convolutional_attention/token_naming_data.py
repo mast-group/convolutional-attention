@@ -16,12 +16,13 @@ class TokenCodeNamingData:
     def __get_file_data(input_file):
         with open(input_file, 'r') as f:
             data = json.load(f)
-        # data=[{"tokens":"hello world I am OK".split(),"name":"hello world you".split()}]*4
-        # data+=[{"tokens":"just another test of a silly program".split(),"name":"who knows".split()}]*4
         names = []
         original_names = []
         code = []
         for entry in data:
+            # skip entries with no relevant data (this will crash the code)
+            if len(entry["tokens"]) == 0 or len(entry["name"]) == 0:
+                continue
             code.append(TokenCodeNamingData.remove_identifiers_markers(entry["tokens"]))
             original_names.append(",".join(entry["name"]))
             subtokens = entry["name"]
