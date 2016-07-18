@@ -24,6 +24,10 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
 
     def train(self, input_file, patience=5, max_epochs=1000, minibatch_size=500):
         assert self.parameters is None, "Model is already trained"
+        print "saving best result so far to %s"%(
+            "copy_convolutional_att_rec_model" +
+            os.path.basename(self.hyperparameters["train_file"]) +
+            ".pkl")
         print "Extracting data..."
         # Get data (train, validation)
         train_data, validation_data, self.naming_data = TokenCodeNamingData.get_data_in_recurrent_copy_convolution_format_with_validation(input_file, .92, self.padding_size)
@@ -33,6 +37,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
         # Create theano model and train
         model = CopyConvolutionalRecurrentAttentionalModel(self.hyperparameters, len(self.naming_data.all_tokens_dictionary),
                                    self.naming_data.name_empirical_dist)
+        self.model = model
 
         def compute_validation_score_names():
             return model.log_prob_with_targets(val_code_sentences, val_copy_vectors, val_target_is_unk, val_name_targets)
@@ -42,6 +47,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
         ratios = np.zeros(len(model.train_parameters))
         n_batches = 0
         epochs_not_improved = 0
+
         print "[%s] Starting training..." % time.asctime()
         for i in xrange(max_epochs):
             start_time = time.time()
@@ -69,8 +75,13 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
                 if name_ll > best_name_score:
                     best_name_score = name_ll
                     best_params = [p.get_value() for p in model.train_parameters]
+                    self.parameters = best_params
                     print "At %s validation: name_ll=%s [best so far]" % (i, name_ll)
                     epochs_not_improved = 0
+                    self.save(
+                        "copy_convolutional_att_rec_model" +
+                        os.path.basename(self.hyperparameters["train_file"]) +
+                        ".pkl")
                 else:
                     print "At %s validation: name_ll=%s" % (i, name_ll)
                     epochs_not_improved += 1
@@ -87,7 +98,6 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
         print "[%s] Training Finished..." % time.asctime()
         self.parameters = best_params
         model.restore_parameters(best_params)
-        self.model = model
 
     identifier_matcher = re.compile('[a-zA-Z0-9]+')
 
@@ -280,9 +290,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 4:
         params["test_file"] = sys.argv[4]
     with ExperimentLogger("ConvolutionalCopyAttentionalRecurrentLearner", params) as experiment_log:
-        model = ConvolutionalCopyAttentionalRecurrentLearner(params)
-        model.train(input_file, max_epochs=max_num_epochs)
-        model.save("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
+        if max_num_epochs:
+            model = ConvolutionalCopyAttentionalRecurrentLearner(params)
+            model.train(input_file, max_epochs=max_num_epochs)
+            model.save("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
 
         if params.get("test_file") is None:
             exit()
