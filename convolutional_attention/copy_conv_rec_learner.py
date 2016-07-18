@@ -14,7 +14,6 @@ from convolutional_attention.copy_conv_rec_model import CopyConvolutionalRecurre
 from convolutional_attention.f1_evaluator import F1Evaluator
 from convolutional_attention.token_naming_data import TokenCodeNamingData
 
-
 class ConvolutionalCopyAttentionalRecurrentLearner:
 
     def __init__(self, hyperparameters):
@@ -275,11 +274,15 @@ if __name__ == "__main__":
 
 
     params["train_file"] = input_file
-    params["test_file"] = sys.argv[4]
+    if len(sys.argv) > 4:
+        params["test_file"] = sys.argv[4]
     with ExperimentLogger("ConvolutionalCopyAttentionalRecurrentLearner", params) as experiment_log:
         model = ConvolutionalCopyAttentionalRecurrentLearner(params)
         model.train(input_file, max_epochs=max_num_epochs)
         model.save("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
+
+        if params.get("test_file") is None:
+            exit()
 
         model2 = ConvolutionalCopyAttentionalRecurrentLearner.load("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
 
