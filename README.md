@@ -34,7 +34,7 @@ test_data, original_names = model.naming_data.get_data_in_recurrent_copy_convolu
 test_name_targets, test_code_sentences, test_code, test_target_is_unk, test_copy_vectors = test_data
 
 idx = 2  # pick an example from test_file
-res = model2.predict_name(np.atleast_2d(test_code[idx]))
+res = model.predict_name(np.atleast_2d(test_code[idx]))
 print "original name:", ' '.join(original_names[idx].split(','))
 print "code:", ' '.join(test_code[idx])
 print "generated names:"
