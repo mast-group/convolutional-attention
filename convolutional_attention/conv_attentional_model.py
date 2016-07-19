@@ -4,6 +4,7 @@ import numpy as np
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from theanoutils.optimization import nesterov_rmsprop_multiple
+floatX = theano.config.floatX
 
 
 class ConvolutionalAttentionalModel(object):
@@ -21,40 +22,40 @@ class ConvolutionalAttentionalModel(object):
 
     def __init_parameter(self, empirical_name_dist):
         all_name_rep = np.random.randn(self.all_voc_size, self.D) * 10 ** self.hyperparameters["log_name_rep_init_scale"]
-        self.all_name_reps = theano.shared(all_name_rep, name="all_name_reps")
+        self.all_name_reps = theano.shared(all_name_rep.astype(floatX), name="all_name_reps")
 
         name_cx_rep = np.random.randn(self.name_voc_size, self.D) * 10 ** self.hyperparameters["log_name_rep_init_scale"]
-        self.name_cx_reps = theano.shared(name_cx_rep, name="name_cx_rep")
+        self.name_cx_reps = theano.shared(name_cx_rep.astype(floatX), name="name_cx_rep")
 
         conv_layer1_code = np.random.randn(self.hyperparameters["conv_layer1_nfilters"], 1,
                                      self.hyperparameters["layer1_window_size"], self.D) * 10 ** self.hyperparameters["log_layer1_init_scale"]
-        self.conv_layer1_code = theano.shared(conv_layer1_code, name="conv_layer1_code")
+        self.conv_layer1_code = theano.shared(conv_layer1_code.astype(floatX), name="conv_layer1_code")
         conv_layer1_bias = np.random.randn(self.hyperparameters["conv_layer1_nfilters"]) * 10 ** self.hyperparameters["log_layer1_init_scale"]
-        self.conv_layer1_bias = theano.shared(conv_layer1_bias, name="conv_layer1_bias")
+        self.conv_layer1_bias = theano.shared(conv_layer1_bias.astype(floatX), name="conv_layer1_bias")
 
         conv_layer2_code = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer1_nfilters"],
                                      self.hyperparameters["layer2_window_size"], 1) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.conv_layer2_code = theano.shared(conv_layer2_code, name="conv_layer2_code")
+        self.conv_layer2_code = theano.shared(conv_layer2_code.astype(floatX), name="conv_layer2_code")
         gate_layer2_code = np.random.randn(self.hyperparameters["conv_layer2_nfilters"], self.hyperparameters["conv_layer1_nfilters"],
                                      self.hyperparameters["layer2_window_size"], 1) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.gate_weights_code_l2 = theano.shared(gate_layer2_code, name="gate_weights_code_l2")
+        self.gate_weights_code_l2 = theano.shared(gate_layer2_code.astype(floatX), name="gate_weights_code_l2")
         conv_layer2_name_cx = np.random.randn(1, self.hyperparameters["conv_layer2_nfilters"], self.name_cx_size, self.D) * 10 ** self.hyperparameters["log_layer1_init_scale"]
-        self.conv_layer2_name_cx = theano.shared(conv_layer2_name_cx, name="conv_layer2_name_cx")
+        self.conv_layer2_name_cx = theano.shared(conv_layer2_name_cx.astype(floatX), name="conv_layer2_name_cx")
 
         conv_layer2_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.conv_layer2_bias = theano.shared(conv_layer2_bias, name="conv_layer2_bias")
+        self.conv_layer2_bias = theano.shared(conv_layer2_bias.astype(floatX), name="conv_layer2_bias")
         gate_layer2_bias = np.random.randn(self.hyperparameters["conv_layer2_nfilters"]) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        self.gate_layer2_bias = theano.shared(gate_layer2_bias, name="gate_layer2_bias")
+        self.gate_layer2_bias = theano.shared(gate_layer2_bias.astype(floatX), name="gate_layer2_bias")
 
         # Currently conflate all to one dimension
         conv_layer3_code = np.random.randn(1, self.hyperparameters["conv_layer2_nfilters"],
                                      self.hyperparameters["layer3_window_size"], 1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
-        self.conv_layer3_code = theano.shared(conv_layer3_code, name="conv_layer3_code")
+        self.conv_layer3_code = theano.shared(conv_layer3_code.astype(floatX), name="conv_layer3_code")
         conv_layer3_bias = np.random.randn(1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
-        self.conv_layer3_bias = theano.shared(conv_layer3_bias[0], name="conv_layer3_bias")
+        self.conv_layer3_bias = theano.shared(conv_layer3_bias[0].astype(floatX), name="conv_layer3_bias")
 
         # Names
-        self.name_bias = theano.shared(np.log(empirical_name_dist)[:-1], name="name_bias")
+        self.name_bias = theano.shared(np.log(empirical_name_dist).astype(floatX)[:-1], name="name_bias")
 
         self.rng = RandomStreams()
 
@@ -158,8 +159,8 @@ class ConvolutionalAttentionalModel(object):
         return sentence, name_contexts, name_target, name_log_prob, target_name_log_probs, name_context_with_code_data, code_toks_weights[0]
 
     def __compile_model_functions(self):
-            grad_acc = [theano.shared(np.zeros(param.get_value().shape)) for param in self.train_parameters] \
-                        + [theano.shared(0, name="sentence_count")]
+            grad_acc = [theano.shared(np.zeros(param.get_value().shape).astype(floatX)) for param in self.train_parameters] \
+                        + [theano.shared(np.zeros(1,dtype=floatX)[0], name="sentence_count")]
 
             sentence = T.ivector("sentence")
             name_context = T.ivector("name_context")
@@ -182,8 +183,8 @@ class ConvolutionalAttentionalModel(object):
                                                     momentum=self.hyperparameters["momentum"],
                                                     grad_clip=self.hyperparameters["grad_clip"],
                                                     output_ratios=True)
-            step_updates.extend([(v, T.zeros(v.shape)) for v in grad_acc[:-1]])  # Set accumulators to 0
-            step_updates.append((grad_acc[-1], 0))
+            step_updates.extend([(v, T.zeros(v.shape,dtype=floatX)) for v in grad_acc[:-1]])  # Set accumulators to 0
+            step_updates.append((grad_acc[-1], T.zeros(1,dtype=floatX)))
 
             self.grad_step = theano.function(inputs=[], updates=step_updates, outputs=ratios)
 

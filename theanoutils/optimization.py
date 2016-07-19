@@ -2,10 +2,11 @@ from collections import OrderedDict
 import theano.tensor as T
 import theano
 import numpy as np
+floatX = theano.config.floatX
 
 def adagrad(parameter, parameter_gradient, learning_rate=.05, fudge_factor=1e-10, clip_threshold=1):
     clipped_gradient = T.clip(parameter_gradient, -clip_threshold, clip_threshold)
-    adagrad_historical = theano.shared(np.zeros(parameter.get_value().shape, dtype=np.float64), "adagrad_historical")
+    adagrad_historical = theano.shared(np.zeros(parameter.get_value().shape, dtype=floatX), "adagrad_historical")
     next_adagrad = adagrad_historical + T.pow(clipped_gradient, 2)
     adagrad_update = adagrad_historical, next_adagrad
     update = learning_rate / T.sqrt(fudge_factor + next_adagrad) * clipped_gradient
@@ -16,7 +17,7 @@ def adagrad(parameter, parameter_gradient, learning_rate=.05, fudge_factor=1e-10
 
 def rmsprop(parameter, parameter_gradient, learning_rate=.05, fudge_factor=1e-10, rho=.9, clip_threshold=1):
     clipped_gradient = T.clip(parameter_gradient, -clip_threshold, clip_threshold)
-    rmsprob_moving_avg = theano.shared(np.ones(parameter.get_value().shape, dtype=np.float64) * 0, "rmsprop_historical")
+    rmsprob_moving_avg = theano.shared(np.ones(parameter.get_value().shape, dtype=floatX) * 0, "rmsprop_historical")
     next_rmsprop_avg = rho * rmsprob_moving_avg + (1. - rho) * T.pow(clipped_gradient, 2)
     update = rmsprob_moving_avg, next_rmsprop_avg
     grad_step = learning_rate / T.sqrt(fudge_factor + next_rmsprop_avg) * clipped_gradient
@@ -60,11 +61,12 @@ def nesterov_rmsprop_multiple(parameters, parameter_gradients, learning_rate=.00
     return updates
 
 def nesterov_rmsprop(parameter, parameter_gradient, learning_rate, momentum, fudge_factor=1e-10, rho=.9):
-    memory = theano.shared(np.zeros_like(parameter.get_value(), dtype=np.float64), name="nesterov_momentum")
-    rmsprop_moving_avg = theano.shared(np.zeros(parameter.get_value().shape, dtype=np.float64), "rmsprop_historical")
+    memory = theano.shared(np.zeros_like(parameter.get_value(), dtype=floatX), name="nesterov_momentum")
+    rmsprop_moving_avg = theano.shared(np.zeros(parameter.get_value().shape, dtype=floatX), "rmsprop_historical")
 
     next_rmsprop_avg = rho * rmsprop_moving_avg + (1. - rho) * T.pow(parameter_gradient, 2)
     memory_update = memory, momentum * memory + learning_rate / T.sqrt(fudge_factor + next_rmsprop_avg) * parameter_gradient
+    assert str(memory_update[0].type).split('(')[-1] == str(memory_update[1].type).split('(')[-1]
     grad_step = - momentum * memory + (1. + momentum) * memory_update[1]
     parameter_update = parameter, parameter + grad_step
 
